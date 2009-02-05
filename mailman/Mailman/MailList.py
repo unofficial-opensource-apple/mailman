@@ -882,9 +882,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             msg['Subject'] = 'confirm ' + cookie
             msg['Reply-To'] = self.GetRequestEmail()
             msg.send(self)
-            who = formataddr((name, email))
+            # Encode name for printing
+            if isinstance(name, UnicodeType):
+                a_name = name.encode('utf8')
+            else:
+                a_name = name
             syslog('subscribe', '%s: pending %s %s',
-                   self.internal_name(), who, by)
+                   self.internal_name(), formataddr((a_name, email)), by)
             raise Errors.MMSubscribeNeedsConfirmation
         else:
             # Subscription approval is required.  Add this entry to the admin
@@ -944,8 +948,13 @@ class MailList(HTMLFormatter, Deliverer, ListAdmin,
             kind = ' (digest)'
         else:
             kind = ''
+        # Encode name for printing
+        if isinstance(name, UnicodeType):
+            a_name = name.encode('utf8')
+        else:
+            a_name = name
         syslog('subscribe', '%s: new%s %s, %s', self.internal_name(),
-               kind, formataddr((email, name)), whence)
+               kind, formataddr((a_name, email)), whence)
         if ack:
             self.SendSubscribeAck(email, self.getMemberPassword(email),
                                   digest, text)
